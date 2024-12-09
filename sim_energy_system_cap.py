@@ -43,10 +43,11 @@ irr_w_m2 = 1366.1 #Solar irradiance [W/m^2]
 def solar_current(irr_w_m2, sa_m2, eff, voc):
     return irr_w_m2 * sa_m2 * eff / voc
 
-#Calculates 
+#Calculates node discriminant
 def node_discrim(q_c, c_f, i_a, esr_ohm, power_w):
     return (q_c / c_f + i_a * esr_ohm)**2 - 4 * power_w * esr_ohm
 
+#Calculates node voltage
 def node_voltage(q_c, c_f, i_a, esr_ohm, disc):
     return (q_c / c_f + i_a * esr_ohm + math.sqrt(disc)) / 2
 
@@ -113,17 +114,17 @@ while log[-1][0] < dur_s:
     i1_a = isc_a if 0 <= node_v < voc else 0.0
     node_discr = node_discrim(qt_c, c_f, i1_a, r_esr, p_mode_w)
     
-    if(node_discr<0.0):
+    if node_discr < 0.0:
         p_mode_w = 0.0
         node_discr = node_discrim(qt_c, c_f, i1_a, r_esr, p_mode_w)
         
     node_v = node_voltage(qt_c, c_f, i1_a, r_esr, node_discr)
     
-    if voc <= node_v and i1_a != 0.0:
-        i1_a = 0.0
-        
     if node_v < v_thresh:
         p_mode_w = 0.0
+    
+    if voc <= node_v and i1_a != 0.0:
+        i1_a = 0.0
         
     log.append([t_s,node_v])
     t_s += dt_s
